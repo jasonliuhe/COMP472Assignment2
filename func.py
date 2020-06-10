@@ -223,3 +223,133 @@ def e1_get_count(data, stop_word_list):
     sorted_vocabulary_list = sorted(vocabulary_list_deduplication)
 
     return vocabulary_count, sorted_vocabulary_list, remove_list, total_word
+
+
+def e2_get_count(data):
+    title_list = data.Title.tolist()
+    # remove all the punctuation for every word, so we will not remove right word which with the punctuation in next
+    # step
+    punctuation = "!\"#$%&'()*+,./:;<=>?@[\]^`{|}~"
+    for x in range(len(title_list)):
+        title_list[x] = title_list[x].translate(str.maketrans('', '', punctuation))
+    # split all the string in to word
+    vocabulary_list = []
+
+    for x in range(len(title_list)):
+        vocabulary_list = vocabulary_list + title_list[x].split(" ")
+    # remove all the word contained number and special characters, because the number is to specific, it does help in
+    # frequency
+    remove_alpha_list = [item for item in vocabulary_list if not any((char.isalpha() or char == '-' or char == '_') for char in item)]
+    remove_list = [item for item in vocabulary_list if (any(char.isdigit() for char in item) or len(item) <= 2 or len(item) >= 9)]
+    remove_list = remove_list + remove_alpha_list
+    new_alpha_items = [item for item in vocabulary_list if
+                       not any(not (char.isalpha() or char == '-' or char == '_') for char in item)]
+    new_items = [item for item in new_alpha_items if not (any(char.isdigit() for char in item) or len(item) <= 2 or len(item) >= 9)]
+
+    vocabulary_list = new_items
+
+    # remove empty string
+    while "" in vocabulary_list:
+        vocabulary_list.remove("")
+    remove_list.append("")
+
+    total_word = len(vocabulary_list)
+    vocabulary_count = Counter(vocabulary_list)
+    vocabulary_list_deduplication = list(dict.fromkeys(vocabulary_list))
+    sorted_vocabulary_list = sorted(vocabulary_list_deduplication)
+
+    return vocabulary_count, sorted_vocabulary_list, remove_list, total_word
+
+
+def e3_1_get_count(data, remove_frequency):
+    title_list = data.Title.tolist()
+    # remove all the punctuation for every word, so we will not remove right word which with the punctuation in next
+    # step
+    punctuation = "!\"#$%&'()*+,./:;<=>?@[\]^`{|}~"
+    for x in range(len(title_list)):
+        title_list[x] = title_list[x].translate(str.maketrans('', '', punctuation))
+    # split all the string in to word
+    vocabulary_list = []
+
+    for x in range(len(title_list)):
+        vocabulary_list = vocabulary_list + title_list[x].split(" ")
+    # remove all the word contained number and special characters, because the number is to specific, it does help in
+    # frequency
+    remove_alpha_list = [item for item in vocabulary_list if not any((char.isalpha() or char == '-' or char == '_') for char in item)]
+    remove_list = [item for item in vocabulary_list if (any(char.isdigit() for char in item) or len(item) <= 2 or len(item) >= 9)]
+    remove_list = remove_list + remove_alpha_list
+    new_alpha_items = [item for item in vocabulary_list if
+                       not any(not (char.isalpha() or char == '-' or char == '_') for char in item)]
+    new_items = [item for item in new_alpha_items if not (any(char.isdigit() for char in item) or len(item) <= 2 or len(item) >= 9)]
+
+    vocabulary_list = new_items
+
+    # remove empty string
+    while "" in vocabulary_list:
+        vocabulary_list.remove("")
+    remove_list.append("")
+
+
+    vocabulary_count = Counter(vocabulary_list)
+    # remove the word which lower than threshold
+    remove_word = []
+    for word in vocabulary_count:
+        if vocabulary_count[word] <= remove_frequency:
+            remove_list.append(word)
+            remove_word.append(word)
+    vocabulary_list_deduplication = list(dict.fromkeys(vocabulary_list))
+    for word in remove_word:
+        del vocabulary_count[word]
+        vocabulary_list_deduplication.remove(word)
+    total_word = len(vocabulary_list)
+
+    sorted_vocabulary_list = sorted(vocabulary_list_deduplication)
+    return vocabulary_count, sorted_vocabulary_list, remove_list, total_word
+
+
+def e3_2_get_count(data, remove_frequency):
+    title_list = data.Title.tolist()
+    # remove all the punctuation for every word, so we will not remove right word which with the punctuation in next
+    # step
+    punctuation = "!\"#$%&'()*+,./:;<=>?@[\]^`{|}~"
+    for x in range(len(title_list)):
+        title_list[x] = title_list[x].translate(str.maketrans('', '', punctuation))
+    # split all the string in to word
+    vocabulary_list = []
+
+    for x in range(len(title_list)):
+        vocabulary_list = vocabulary_list + title_list[x].split(" ")
+    # remove all the word contained number and special characters, because the number is to specific, it does help in
+    # frequency
+    remove_alpha_list = [item for item in vocabulary_list if not any((char.isalpha() or char == '-' or char == '_') for char in item)]
+    remove_list = [item for item in vocabulary_list if (any(char.isdigit() for char in item) or len(item) <= 2 or len(item) >= 9)]
+    remove_list = remove_list + remove_alpha_list
+    new_alpha_items = [item for item in vocabulary_list if
+                       not any(not (char.isalpha() or char == '-' or char == '_') for char in item)]
+    new_items = [item for item in new_alpha_items if not (any(char.isdigit() for char in item) or len(item) <= 2 or len(item) >= 9)]
+
+    vocabulary_list = new_items
+
+    # remove empty string
+    while "" in vocabulary_list:
+        vocabulary_list.remove("")
+    remove_list.append("")
+
+
+    vocabulary_count = Counter(vocabulary_list)
+    # remove the word which lower than threshold
+    sort_vc = vocabulary_count.most_common()
+    num_remove = int(len(sort_vc)*remove_frequency)
+    count = 0
+    vocabulary_list_deduplication = list(dict.fromkeys(vocabulary_list))
+    for word in sort_vc:
+        if count == num_remove:
+            break
+        remove_list.append(word)
+        vocabulary_list_deduplication.remove(word[0])
+        del vocabulary_count[word]
+        count += 1
+    total_word = len(vocabulary_list)
+
+    sorted_vocabulary_list = sorted(vocabulary_list_deduplication)
+    return vocabulary_count, sorted_vocabulary_list, remove_list, total_word
