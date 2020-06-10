@@ -143,11 +143,11 @@ def test_Title(Title, p_story, p_ask_hn, p_show_hn, p_poll, store_p, ask_hn_p, s
     return store_score, ask_hn_score, show_hn_score, poll_score
 
 
-def test_model(vocabulary_list, test_set, p_story, p_ask_hn, p_show_hn, p_poll, store_p, ask_hn_p, show_hn_p, poll_p):
+def test_model(vocabulary_list, test_set, p_story, p_ask_hn, p_show_hn, p_poll, store_p, ask_hn_p, show_hn_p, poll_p, result_name):
     Title = test_set.Title.tolist()
     Type = test_set["Post Type"]
     type_list = Type.tolist()
-    f = open("baselineresult.txt", 'w')
+    f = open(result_name, 'w')
     count = 0
     wrong_num = 0
     for x in Title:

@@ -33,7 +33,7 @@ def main():
                                                              ask_hn_vocabulary_list, show_hn_count, show_hn_total_word,
                                                              show_hn_vocabulary_list, poll_count, poll_total_word,
                                                              poll_vocabulary_list, 'model-2018.txt')
-    func.test_model(vocabulary_list, test_set, p_story, p_ask_hn, p_show_hn, p_poll, store_p, ask_hn_p, show_hn_p, poll_p)
+    func.test_model(vocabulary_list, test_set, p_story, p_ask_hn, p_show_hn, p_poll, store_p, ask_hn_p, show_hn_p, poll_p, "baselineresult.txt")
 
 
 def Experiment1():
@@ -60,16 +60,16 @@ def Experiment1():
     remove_list = func.get_remove_list(story_remove_list, ask_hn_remove_list,
                                        show_hn_remove_list, poll_remove_list)
 
-    func.save_file('E1vocabulary.txt', vocabulary_list)
-    func.save_file('E1remove.txt', remove_list)
+    func.save_file('stopword_vocabulary.txt', vocabulary_list)
+    func.save_file('stopword_remove.txt', remove_list)
 
     p_story, p_ask_hn, p_show_hn, p_poll = func.create_model(vocabulary_list, story_count, story_total_word,
                                                              story_vocabulary_list, ask_hn_count, ask_hn_total_word,
                                                              ask_hn_vocabulary_list, show_hn_count, show_hn_total_word,
                                                              show_hn_vocabulary_list, poll_count, poll_total_word,
-                                                             poll_vocabulary_list, 'E1model-2018.txt')
+                                                             poll_vocabulary_list, 'stopword-model.txt')
     func.test_model(vocabulary_list, test_set, p_story, p_ask_hn, p_show_hn, p_poll, store_p, ask_hn_p, show_hn_p,
-                    poll_p)
+                    poll_p, "stopword-result.txt")
 
 
 # main()
