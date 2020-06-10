@@ -1,6 +1,4 @@
-import string
 from decimal import Decimal
-
 import pandas as pd
 from collections import Counter
 
@@ -81,25 +79,25 @@ def create_model(vocabulary_list, story_count, story_total_word, story_vocabular
     for x in vocabulary_list:
         if len(story_vocabulary_list) > 0:
             p_story.append((Decimal(story_count[x]) + Decimal(0.5)) / (
-                        Decimal(story_total_word) + Decimal(0.5) * len(story_vocabulary_list)))
+                    Decimal(story_total_word) + Decimal(0.5) * len(story_vocabulary_list)))
         else:
             p_story.append(Decimal(0))
 
         if len(ask_hn_vocabulary_list) > 0:
             p_ask_hn.append((Decimal(ask_hn_count[x]) + Decimal(0.5)) / (
-                        Decimal(ask_hn_total_word) + Decimal(0.5) * len(ask_hn_vocabulary_list)))
+                    Decimal(ask_hn_total_word) + Decimal(0.5) * len(ask_hn_vocabulary_list)))
         else:
             p_ask_hn.append(Decimal(0))
 
         if len(show_hn_vocabulary_list) > 0:
             p_show_hn.append((Decimal(show_hn_count[x]) + Decimal(0.5)) / (
-                        Decimal(show_hn_total_word) + Decimal(0.5) * len(show_hn_vocabulary_list)))
+                    Decimal(show_hn_total_word) + Decimal(0.5) * len(show_hn_vocabulary_list)))
         else:
             p_show_hn.append(Decimal(0))
 
         if len(poll_vocabulary_list) > 0:
             p_poll.append((Decimal(poll_count[x]) + Decimal(0.5)) / (
-                        Decimal(poll_total_word) + Decimal(0.5) * len(poll_vocabulary_list)))
+                    Decimal(poll_total_word) + Decimal(0.5) * len(poll_vocabulary_list)))
         else:
             p_poll.append(Decimal(0))
 
@@ -111,6 +109,7 @@ def create_model(vocabulary_list, story_count, story_total_word, story_vocabular
                      p_show_hn[x], poll_count[vocabulary_list[x]], p_poll[x]))
 
     return p_story, p_ask_hn, p_show_hn, p_poll
+
 
 def test_Title(Title, p_story, p_ask_hn, p_show_hn, p_poll, store_p, ask_hn_p, show_hn_p, poll_p, o_vocabulary_list):
     # remove all the punctuation for every word, so we will not remove right word which with the punctuation in next
@@ -152,14 +151,75 @@ def test_model(vocabulary_list, test_set, p_story, p_ask_hn, p_show_hn, p_poll, 
     count = 0
     wrong_num = 0
     for x in Title:
-        story_score, ask_hn_score, show_hn_score, poll_score = test_Title(x, p_story, p_ask_hn, p_show_hn, p_poll, store_p, ask_hn_p, show_hn_p, poll_p, vocabulary_list)
+        story_score, ask_hn_score, show_hn_score, poll_score = test_Title(x, p_story, p_ask_hn, p_show_hn, p_poll,
+                                                                          store_p, ask_hn_p, show_hn_p, poll_p,
+                                                                          vocabulary_list)
         score = {"story": story_score, "ask_hn": ask_hn_score, "show_hn": show_hn_score, "poll": poll_score}
         check = "right"
         if max(score, key=score.get) != type_list[count]:
             check = "wrong"
             wrong_num += 1
-        f.write("%d  %s  %s  %5f  %5f  %5f  %5f  %s  %s\n" % (count, x, type_list[count], story_score, ask_hn_score, show_hn_score, poll_score, max(score, key=score.get), check))
+        f.write("%d  %s  %s  %5f  %5f  %5f  %5f  %s  %s\n" % (
+            count, x, type_list[count], story_score, ask_hn_score, show_hn_score, poll_score, max(score, key=score.get),
+            check))
         count += 1
     f.close()
-    print(wrong_num)
+    print("#Wrong: ", wrong_num)
 
+
+def read_stop_words(data):
+    stop_words_file = []
+    with open(data) as f:
+        for line in f:
+            inner_list = line.strip('\n')
+            # in alternative, if you need to use the file content as numbers
+            # inner_list = [int(elt.strip()) for elt in line.split(',')]
+            stop_words_file.append(inner_list)
+    return stop_words_file
+
+
+def e1_get_count(data, stop_word_list):
+    title_list = data.Title.tolist()
+
+    # remove all the punctuation for every word, so we will not remove right word which with the punctuation in next
+    # step
+    punctuation = "!\"#$%&'()*+,./:;<=>?@[\]^`{|}~"
+    for x in range(len(title_list)):
+        title_list[x] = title_list[x].translate(str.maketrans('', '', punctuation))
+
+    for x in range(len(stop_word_list)):
+        stop_word_list[x] = stop_word_list[x].translate(str.maketrans('', '', punctuation))
+    # split all the string in to word
+    vocabulary_list = []
+    stop_remove_list = []
+
+    for x in range(len(title_list)):
+        inner_list = title_list[x].split(" ")
+        for y in inner_list:
+            if y not in stop_word_list:
+                vocabulary_list.append(y)
+            else:
+                stop_remove_list.append(y)
+    # remove all the word contained number and special characters, because the number is to specific, it does help in
+    # frequency
+    remove_alpha_list = [item for item in vocabulary_list if
+                         not any((char.isalpha() or char == '-' or char == '_') for char in item)]
+    remove_list = [item for item in vocabulary_list if any(char.isdigit() for char in item)]
+    remove_list = remove_list + remove_alpha_list + stop_remove_list
+    new_alpha_items = [item for item in vocabulary_list if
+                       not any(not (char.isalpha() or char == '-' or char == '_') for char in item)]
+    new_items = [item for item in new_alpha_items if not any(char.isdigit() for char in item)]
+
+    vocabulary_list = new_items
+
+    # remove empty string
+    while "" in vocabulary_list:
+        vocabulary_list.remove("")
+    remove_list.append("")
+
+    total_word = len(vocabulary_list)
+    vocabulary_count = Counter(vocabulary_list)
+    vocabulary_list_deduplication = list(dict.fromkeys(vocabulary_list))
+    sorted_vocabulary_list = sorted(vocabulary_list_deduplication)
+
+    return vocabulary_count, sorted_vocabulary_list, remove_list, total_word
